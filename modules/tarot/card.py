@@ -15,7 +15,7 @@ class TarotDeck:
             name = card_data["name"]
             number = int(card_data["number"])
             is_major_arcana = card_data["arcana"]
-            image_pth = f"./data/cards/{card_data['img']}"
+            image_pth = f"home/user/app/data/cards/{card_data['img']}"
 
             card = Card(
                 name=name,
