@@ -1,11 +1,13 @@
+import os
+
 import streamlit as st
 import yaml
-from scripts.get_cards import get_cards
-import os
+from PIL import Image
 
 from modules.llm.card_interpreter import CardInterpreter
 from modules.tarot.card import TarotDeck
 from modules.utils.commom import CardReadingMethod, label4method
+from scripts.get_cards import get_cards
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(base_dir, "data")
@@ -26,7 +28,8 @@ st.title("🔮 Tarot Reading")
 # Secret configurations
 with st.sidebar:
     if 'expander_state' not in st.session_state:
-        st.session_state.expander_state = False
+        st.session_state['is_expanded'] = False
+        
     with st.expander("⚙️ Settings", expanded=False):
         reversed_prob = st.slider(
             "Probability of reversed cards",
@@ -96,10 +99,17 @@ if st.button(draw_button):
     for idx, (card, col) in enumerate(zip(cards, cols)):
         with col:
             with st.spinner(spinner_texts["reveal"]):
-                st.image(
-                    card.image_pth,
-                    caption=f"{label4method[CardReadingMethod(method)][idx]}: {card.name}",
-                )
+                if card.reversed:
+                    img = Image.open(card.image_pth).rotate(180)
+                    st.image(
+                        img,
+                        caption=f"{label4method[CardReadingMethod(method)][idx]}: {card.name} (Reversed)",
+                    )
+                else:
+                    st.image(
+                        card.image_pth,
+                        caption=f"{label4method[CardReadingMethod(method)][idx]}: {card.name}",
+                    )
 
     # Generate and display interpretation
     with st.spinner(spinner_texts["consult"]):
