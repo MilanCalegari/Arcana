@@ -7,10 +7,14 @@ from modules.llm.card_interpreter import CardInterpreter
 from modules.tarot.card import TarotDeck
 from modules.utils.commom import CardReadingMethod, label4method
 
-# Modificar para usar caminho relativo
+# Usar o mesmo método de obtenção do caminho base
 base_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(base_dir, "data")
 json_file = os.path.join(data_dir, "tarot-images.json")
+
+print(f"App base directory: {base_dir}")
+print(f"App data directory: {data_dir}")
+print(f"App looking for JSON file at: {json_file}")
 
 # Verificar arquivos
 try:
