@@ -11,7 +11,7 @@ def get_cards():
     
     # Download zip file
     url = 'https://www.kaggle.com/api/v1/datasets/download/lsind18/tarot-json'
-    zip_file = './tarot-json.zip'
+    zip_file = '/home/user/app/tarot-json.zip'
     
     response = requests.get(url)
     with open(zip_file, 'wb') as f:
@@ -19,7 +19,7 @@ def get_cards():
     
     # Extract contents
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-        zip_ref.extractall('./data')
+        zip_ref.extractall('home/user/app/data')
     
     # Remove zip file
     os.remove(zip_file)
