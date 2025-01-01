@@ -1,3 +1,4 @@
+import os
 import json
 import random
 
@@ -6,7 +7,15 @@ from ..utils.commom import Card, CardReadingMethod
 
 class TarotDeck:
     def __init__(self):
-        with open("./data/tarot-images.json") as f:
+        base_dir = os.path.dirname(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        )
+        data_dir = os.path.join(base_dir, "data")
+        json_file = os.path.join(data_dir, "tarot-images.json")
+        
+        print(f"TarotDeck looking for JSON at: {json_file}")
+        
+        with open(json_file) as f:
             self.cards_json = json.load(f)
 
     def get_cards(self):
@@ -15,7 +24,7 @@ class TarotDeck:
             name = card_data["name"]
             number = int(card_data["number"])
             is_major_arcana = card_data["arcana"]
-            image_pth = f"./data/cards/{card_data['img']}"
+            image_pth = f"home/user/app/data/cards/{card_data['img']}"
 
             card = Card(
                 name=name,
