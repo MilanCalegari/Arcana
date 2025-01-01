@@ -6,7 +6,7 @@ from ..utils.commom import Card, CardReadingMethod
 
 class TarotDeck:
     def __init__(self):
-        with open("./data/tarot-images.json") as f:
+        with open("home/user/app/data/tarot-images.json") as f:
             self.cards_json = json.load(f)
 
     def get_cards(self):
