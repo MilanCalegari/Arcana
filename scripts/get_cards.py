@@ -28,8 +28,23 @@ def get_cards():
         with open(zip_file, "wb") as f:
             f.write(response.content)
 
+        # Extrair e renomear se necessário
         with zipfile.ZipFile(zip_file, "r") as zip_ref:
-            zip_ref.extractall(data_dir)
+            # Listar conteúdo do ZIP
+            files = zip_ref.namelist()
+            json_files = [f for f in files if f.endswith(".json")]
+
+            if json_files:
+                # Extrair todos os arquivos
+                zip_ref.extractall(data_dir)
+
+                # Renomear o primeiro arquivo JSON encontrado para tarot-images.json
+                old_path = os.path.join(data_dir, json_files[0])
+                new_path = os.path.join(data_dir, "tarot-images.json")
+                if old_path != new_path:
+                    os.rename(old_path, new_path)
+            else:
+                raise Exception("No JSON file found in the ZIP archive")
 
         os.remove(zip_file)
         print("Files downloaded and extracted successfully!")
