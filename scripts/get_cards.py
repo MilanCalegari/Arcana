@@ -19,7 +19,7 @@ def get_cards():
 
     # Extract contents
     with zipfile.ZipFile(zip_file, "r") as zip_ref:
-        zip_ref.extractall("home/user/app/data")
+        zip_ref.extractall("/home/user/app/data")
 
     # Remove zip file
     os.remove(zip_file)
