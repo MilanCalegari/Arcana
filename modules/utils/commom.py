@@ -9,9 +9,9 @@ class ArcanaType(str, Enum):
 
 
 class CardReadingMethod(str, Enum):
-    PAST_PRESENT_FUTURE = "past_present_future"
-    CELTIC_CROSS = "celtic_cross"
-    HAND_OF_ERIS = "hand_of_eris"
+    PAST_PRESENT_FUTURE = "Past Present and Future"
+    CELTIC_CROSS = "Celtic Cross"
+    HAND_OF_ERIS = "Hand of Eris"
 
 
 label4method = {

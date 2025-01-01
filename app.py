@@ -7,28 +7,12 @@ from modules.llm.card_interpreter import CardInterpreter
 from modules.tarot.card import TarotDeck
 from modules.utils.commom import CardReadingMethod, label4method
 
-# Usar o mesmo método de obtenção do caminho base
 base_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(base_dir, "data")
 json_file = os.path.join(data_dir, "tarot-images.json")
 
-print(f"App base directory: {base_dir}")
-print(f"App data directory: {data_dir}")
-print(f"App looking for JSON file at: {json_file}")
 
-# Verificar arquivos
-try:
-    print("Attempting to download cards...")
-    get_cards()
-    print("Cards downloaded successfully")
-
-    if not os.path.exists(json_file):
-        raise FileNotFoundError(f"JSON file not found at {json_file}")
-
-except Exception as e:
-    st.error(f"Error downloading tarot data: {str(e)}")
-    print(f"Detailed error: {e}")
-    st.stop()
+get_cards()
 
 # Initialize deck and interpreter
 deck = TarotDeck()
@@ -41,6 +25,8 @@ st.title("🔮 Tarot Reading")
 
 # Secret configurations
 with st.sidebar:
+    if 'expander_state' not in st.session_state:
+        st.session_state.expander_state = False
     with st.expander("⚙️ Settings", expanded=False):
         reversed_prob = st.slider(
             "Probability of reversed cards",
