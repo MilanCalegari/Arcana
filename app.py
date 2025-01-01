@@ -7,15 +7,17 @@ from modules.llm.card_interpreter import CardInterpreter
 from modules.tarot.card import TarotDeck
 from modules.utils.commom import CardReadingMethod, label4method
 
-# Download cards data before initializing the deck
+# Modificar para usar caminho relativo
+base_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(base_dir, "data")
+json_file = os.path.join(data_dir, "tarot-images.json")
+
+# Verificar arquivos
 try:
     print("Attempting to download cards...")
     get_cards()
     print("Cards downloaded successfully")
 
-    # Verify files exist
-    data_dir = "/home/user/app/data"
-    json_file = os.path.join(data_dir, "tarot-images.json")
     if not os.path.exists(json_file):
         raise FileNotFoundError(f"JSON file not found at {json_file}")
 

@@ -5,8 +5,11 @@ import requests
 
 
 def get_cards():
-    # Use Hugging Face Spaces path
-    data_dir = "/home/user/app/data"
+    # Usar caminho relativo baseado no diretório raiz do projeto
+    base_dir = os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    )
+    data_dir = os.path.join(base_dir, "data")
     os.makedirs(data_dir, exist_ok=True)
 
     # Correct Kaggle API URL
