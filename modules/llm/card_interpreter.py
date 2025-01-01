@@ -1,5 +1,7 @@
+import os
 from typing import Dict, List, Optional
 
+from huggingface_hub import login
 from transformers import pipeline
 
 from modules.utils.commom import Card, CardReadingMethod
@@ -9,6 +11,9 @@ from ..interfaces.llm_interface import CardInterpreterInterface
 
 class CardInterpreter(CardInterpreterInterface):
     def __init__(self) -> None:
+        # Login to Hugging Face
+        hf_token = os.getenv("HF_TOKEN")
+        login(token=hf_token)
         # Initialize pipeline once and cache it
         self.pipeline = pipeline(
             "text-generation",
