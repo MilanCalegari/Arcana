@@ -7,7 +7,7 @@ import requests
 
 def get_cards():
     # Create data directory
-    os.makedirs('./data', exist_ok=True)
+    os.makedirs('home/user/app/data', exist_ok=True)
     
     # Download zip file
     url = 'https://www.kaggle.com/api/v1/datasets/download/lsind18/tarot-json'
