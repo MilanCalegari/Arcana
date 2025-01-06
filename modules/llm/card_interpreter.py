@@ -17,9 +17,9 @@ class CardInterpreter(CardInterpreterInterface):
         # Initialize pipeline once and cache it
         self.pipeline = pipeline(
             "text-generation",
-            model="meta-llama/Llama-3.2-1B-Instruct",
-            device_map="auto", 
-            pad_token_id=128001,
+            model="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+            device_map="auto",
+            pad_token_id=2,
         )
         
         # Cache base prompt content that doesn't change
