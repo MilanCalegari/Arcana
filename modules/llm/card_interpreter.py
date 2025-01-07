@@ -14,15 +14,16 @@ class CardInterpreter(CardInterpreterInterface):
         # Login to Hugging Face
         hf_token = os.getenv("HF_TOKEN")
         login(token=hf_token)
-        # Initialize pipeline once and cache it
+        # Initialize pipeline with smaller model and CPU
         self.pipeline = pipeline(
             "text-generation",
             model="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-            device_map="auto",
+            device_map="cpu", # Force CPU for HF Spaces compatibility
             pad_token_id=2,
+            model_kwargs={"low_cpu_mem_usage": True} # Reduce memory usage
         )
         
-        # Cache base prompt content that doesn't change
+        # Base prompt template
         self._base_content = """
         You are a powerful occultist and exceptional tarot reader. Provide a concise reading based on the given cards.
 
@@ -40,10 +41,6 @@ class CardInterpreter(CardInterpreterInterface):
             - With context: Focus on context-specific interpretation;
             - Without context: Give practical daily guidance;
 
-        If the context is General reading:
-            - Provide a general daily life reading;
-            - Focus on practical matters;
-
         If other context is provided:
             - Focus on the context provided;
             - Provide a reading related to the context;
@@ -52,7 +49,7 @@ class CardInterpreter(CardInterpreterInterface):
         """
 
     def _format_card(self, card: Card) -> str:
-        # Helper to format card name
+        # Format card name with reversed state
         return f"{card.name} (Reversed)" if card.reversed else card.name
 
     def generate_prompt(
@@ -101,8 +98,9 @@ class CardInterpreter(CardInterpreterInterface):
         prompt = self.generate_prompt(cards, context or "General reading", method)
         result = self.pipeline(
             prompt, 
-            max_new_tokens=512,  # Limit token generation
-            num_return_sequences=1,  # Only generate one response
-            do_sample=False  # Deterministic output
+            max_new_tokens=256,  # Reduced token limit for faster inference
+            num_return_sequences=1,
+            do_sample=False,
+            temperature=0.7 # Add some randomness while keeping coherence
         )
         return result[0]["generated_text"][-1]["content"]

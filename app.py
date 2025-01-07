@@ -27,10 +27,7 @@ st.title("🔮 Tarot Reading")
 
 # Secret configurations
 with st.sidebar:
-    if 'expander_state' not in st.session_state:
-        st.session_state['is_expanded'] = False
-        
-    with st.expander("⚙️ Settings", expanded=False):
+    with st.expander("Settings", expanded=False, icon="⚙️"):
         reversed_prob = st.slider(
             "Probability of reversed cards",
             min_value=0.0,
