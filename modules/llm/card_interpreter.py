@@ -20,9 +20,11 @@ class CardInterpreter(CardInterpreterInterface):
             model="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
             device_map="cpu", # Force CPU for HF Spaces compatibility
             pad_token_id=2,
-            model_kwargs={"low_cpu_mem_usage": True} # Reduce memory usage
+            model_kwargs={
+                "low_cpu_mem_usage": False,
+                "use_cache": False 
+            }
         )
-        
         # Base prompt template
         self._base_content = """
         You are a powerful occultist and exceptional tarot reader. Provide a concise reading based on the given cards.
@@ -101,6 +103,5 @@ class CardInterpreter(CardInterpreterInterface):
             max_new_tokens=256,  # Reduced token limit for faster inference
             num_return_sequences=1,
             do_sample=False,
-            temperature=0.7 # Add some randomness while keeping coherence
         )
         return result[0]["generated_text"][-1]["content"]
