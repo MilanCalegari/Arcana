@@ -1,54 +1,42 @@
 import os
 from typing import Dict, List, Optional
 
-from huggingface_hub import login
+from huggingface_hub import HfFolder, login
 from transformers import pipeline
 
 from modules.utils.commom import Card, CardReadingMethod
 
 from ..interfaces.llm_interface import CardInterpreterInterface
+from .rules import content
+
+PIPELINE = None
+
+
+def get_pipeline():
+    global PIPELINE
+    if PIPELINE is None:
+        PIPELINE = pipeline(
+            "text-generation",
+            model="meta-llama/Llama-3.2-1B-Instruct",
+            device_map="auto",
+            pad_token_id=2,
+            model_kwargs={"low_cpu_mem_usage": True, "use_cache": False},
+        )
+    return PIPELINE
 
 
 class CardInterpreter(CardInterpreterInterface):
     def __init__(self) -> None:
         # Login to Hugging Face
         hf_token = os.getenv("HF_TOKEN")
-        login(token=hf_token)
-        # Initialize pipeline with smaller model and CPU
-        self.pipeline = pipeline(
-            "text-generation",
-            model="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-            device_map="cpu", # Force CPU for HF Spaces compatibility
-            pad_token_id=2,
-            model_kwargs={
-                "low_cpu_mem_usage": False,
-                "use_cache": False 
-            }
-        )
+        if not HfFolder.get_token():
+            login(token=hf_token)
+
+        # Initialize pipeline
+        self.pipeline = get_pipeline()
+
         # Base prompt template
-        self._base_content = """
-        You are a powerful occultist and exceptional tarot reader. Provide a concise reading based on the given cards.
-
-        Focus on Rider Waite Tarot symbolism and card imagery.
-
-        The possible methods are:
-            - PAST_PRESENT_FUTURE: Three cards, past, present and future;
-            - CELTIC_CROSS: Ten cards, the situation, challenges, what to focus on, your past, your strengths, near future, suggested approach, what you need to know, your hopes and fears, and outcomes;
-            - HAND_OF_ERIS: Five cards, about your question, what may help you, what may hinder you, possible outcome number 1, and possible outcome number 2;
-
-        Reading Guidelines:
-            - Keep answers brief and focused;
-            - Provide a summary overview;
-            - Only interpret reversed cards when specified;
-            - With context: Focus on context-specific interpretation;
-            - Without context: Give practical daily guidance;
-
-        If other context is provided:
-            - Focus on the context provided;
-            - Provide a reading related to the context;
-            - Focus primarily on interpreting within the given context
-            - Keep the symbolism of the cards first, but make sure to use the context to interpret the cards.
-        """
+        self._base_content = content
 
     def _format_card(self, card: Card) -> str:
         # Format card name with reversed state
@@ -63,7 +51,6 @@ class CardInterpreter(CardInterpreterInterface):
                 Present: {self._format_card(cards[1])}
                 Future: {self._format_card(cards[2])}
             """,
-            
             CardReadingMethod.CELTIC_CROSS: lambda: f"""The provided cards are:
                 The situation: {self._format_card(cards[0])}
                 Challenges: {self._format_card(cards[1])}
@@ -76,22 +63,23 @@ class CardInterpreter(CardInterpreterInterface):
                 Your hopes and fears: {self._format_card(cards[8])}
                 Outcomes: {self._format_card(cards[9])}
             """,
-            
             CardReadingMethod.HAND_OF_ERIS: lambda: f"""The provided cards are:
                 About your question: {self._format_card(cards[0])}
                 What may help you: {self._format_card(cards[1])}
                 What may hinder you: {self._format_card(cards[2])}
                 Possible outcome number 1: {self._format_card(cards[3])}
                 Possible outcome number 2: {self._format_card(cards[4])}
-            """
+            """,
         }
 
         question = method_templates[method]()
-        question += f"\nIn the context of: {context}\nDrawn with the method: {method.value}"
+        question += (
+            f"\nIn the context of: {context}\nDrawn with the method: {method.value}"
+        )
 
         return [
             {"role": "system", "content": self._base_content},
-            {"role": "user", "content": question}
+            {"role": "user", "content": question},
         ]
 
     def generate_interpretation(
@@ -99,8 +87,8 @@ class CardInterpreter(CardInterpreterInterface):
     ) -> str:
         prompt = self.generate_prompt(cards, context or "General reading", method)
         result = self.pipeline(
-            prompt, 
-            max_new_tokens=256,  # Reduced token limit for faster inference
+            prompt,
+            max_new_tokens=512,
             num_return_sequences=1,
             do_sample=False,
         )

@@ -27,41 +27,28 @@ def get_cards():
         with open(zip_file, "wb") as f:
             f.write(response.content)
 
-        # Extrair e renomear se necessário
+        # Extract and rename if necessary
         with zipfile.ZipFile(zip_file, "r") as zip_ref:
-            # Listar conteúdo do ZIP
+            # List all files in the ZIP
             files = zip_ref.namelist()
             json_files = [f for f in files if f.endswith(".json")]
 
-            print(f"Arquivos encontrados no ZIP: {files}")
-            print(f"Arquivos JSON encontrados: {json_files}")
-
             if json_files:
-                # Extrair todos os arquivos
+                # Extract all files
                 zip_ref.extractall(data_dir)
 
-                # Renomear o primeiro arquivo JSON encontrado para tarot-images.json
                 old_path = os.path.join(data_dir, json_files[0])
                 new_path = os.path.join(data_dir, "tarot-images.json")
-                print(f"Renomeando de {old_path} para {new_path}")
 
                 if old_path != new_path:
                     if os.path.exists(old_path):
                         os.rename(old_path, new_path)
-                    else:
-                        print(f"ERRO: Arquivo original {old_path} não encontrado!")
+
             else:
                 raise Exception("No JSON file found in the ZIP archive")
 
         os.remove(zip_file)
 
-        # Verificar se o arquivo final existe
-        if os.path.exists(new_path):
-            print(f"Arquivo final encontrado em: {new_path}")
-        else:
-            print(f"ERRO: Arquivo final não encontrado em: {new_path}")
-
-        print("Files downloaded and extracted successfully!")
 
     except Exception as e:
         print(f"Error downloading/extracting files: {e}")

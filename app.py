@@ -13,13 +13,19 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(base_dir, "data")
 json_file = os.path.join(data_dir, "tarot-images.json")
 
-
-get_cards()
+if 'initialized' not in st.session_state:
+    get_cards()
+    st.session_state.initialized = True
 
 # Initialize deck and interpreter
-deck = TarotDeck()
-deck.get_cards()
-interpreter = CardInterpreter()
+if 'deck' not in st.session_state:
+    deck = TarotDeck()
+    deck.get_cards()
+    st.session_state.deck = deck
+
+if 'interpreter' not in st.session_state:
+    interpreter = CardInterpreter()
+    st.session_state.interpreter = interpreter
 
 st.set_page_config(page_title="Tarot Reading", page_icon="🔮", layout="centered")
 
@@ -42,8 +48,6 @@ with st.sidebar:
         #     ["English", "Portuguese"],
         #     index=0
         # )
-
-reversed_prob -= 1
 
 # User interface texts
 welcome_text = "### Welcome to your Tarot Reading"
@@ -84,10 +88,10 @@ context = st.text_area(context_text, placeholder=context_placeholder)
 if st.button(draw_button):
     # Shuffle and draw cards
     with st.spinner(spinner_texts["shuffle"]):
-        deck.shuffle(reversed_prob)
+        st.session_state.deck.shuffle(reversed_prob)
 
     with st.spinner(spinner_texts["channel"]):
-        cards = deck.draw(CardReadingMethod(method))
+        cards = st.session_state.deck.draw(CardReadingMethod(method))
 
     # Display cards
     st.markdown(spinner_texts["cards"])
@@ -111,11 +115,11 @@ if st.button(draw_button):
     # Generate and display interpretation
     with st.spinner(spinner_texts["consult"]):
         if context:
-            interpretation = interpreter.generate_interpretation(
+            interpretation = st.session_state.interpreter.generate_interpretation(
                 cards, context, CardReadingMethod(method)
             )
         else:
-            interpretation = interpreter.generate_interpretation(
+            interpretation = st.session_state.interpreter.generate_interpretation(
                 cards, None, CardReadingMethod(method)
             )
 
