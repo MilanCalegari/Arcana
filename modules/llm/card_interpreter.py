@@ -1,55 +1,28 @@
 import os
-from typing import Dict, List, Optional
+from typing import List
 
-from huggingface_hub import HfFolder, login
-from transformers import pipeline
+from huggingface_hub import InferenceClient
 
 from modules.utils.commom import Card, CardReadingMethod
 
-from ..interfaces.llm_interface import CardInterpreterInterface
-from .rules import content
 
-PIPELINE = None
-
-
-def get_pipeline():
-    global PIPELINE
-    if PIPELINE is None:
-        PIPELINE = pipeline(
-            "text-generation",
-            model="meta-llama/Llama-3.2-1B-Instruct",
-            device_map="auto",
-            pad_token_id=2,
-            model_kwargs={"low_cpu_mem_usage": True, "use_cache": False},
-        )
-    return PIPELINE
-
-
-class CardInterpreter(CardInterpreterInterface):
+class CardInterpreter:
     def __init__(self) -> None:
-        # Login to Hugging Face
         hf_token = os.getenv("HF_TOKEN")
-        if not HfFolder.get_token():
-            login(token=hf_token)
+        self.client = InferenceClient(api_key=hf_token)
 
-        # Initialize pipeline
-        self.pipeline = get_pipeline()
-
-        # Base prompt template
-        self._base_content = content
-
-    def _format_card(self, card: Card) -> str:
-        # Format card name with reversed state
+    def _format_card(self, card: Card):
         return f"{card.name} (Reversed)" if card.reversed else card.name
 
-    def generate_prompt(
-        self, cards: List[Card], context: str, method: CardReadingMethod
-    ) -> List[Dict[str, str]]:
+    def complet_prompt(self, cards, context, method) -> str:
         method_templates = {
             CardReadingMethod.PAST_PRESENT_FUTURE: lambda: f"""The provided cards are:
                 Past: {self._format_card(cards[0])}
                 Present: {self._format_card(cards[1])}
                 Future: {self._format_card(cards[2])}
+
+                The context are:
+                {context}
             """,
             CardReadingMethod.CELTIC_CROSS: lambda: f"""The provided cards are:
                 The situation: {self._format_card(cards[0])}
@@ -62,6 +35,9 @@ class CardInterpreter(CardInterpreterInterface):
                 What you need to know: {self._format_card(cards[7])}
                 Your hopes and fears: {self._format_card(cards[8])}
                 Outcomes: {self._format_card(cards[9])}
+
+                The context are:
+                {context}
             """,
             CardReadingMethod.HAND_OF_ERIS: lambda: f"""The provided cards are:
                 About your question: {self._format_card(cards[0])}
@@ -69,27 +45,45 @@ class CardInterpreter(CardInterpreterInterface):
                 What may hinder you: {self._format_card(cards[2])}
                 Possible outcome number 1: {self._format_card(cards[3])}
                 Possible outcome number 2: {self._format_card(cards[4])}
+
+                The context are:
+                {context}
             """,
         }
 
-        question = method_templates[method]()
-        question += (
-            f"\nIn the context of: {context}\nDrawn with the method: {method.value}"
-        )
+        return method_templates[method]()
 
-        return [
-            {"role": "system", "content": self._base_content},
-            {"role": "user", "content": question},
+
+    def generate_interpretation(self, cards: List[Card], context: str, method: CardReadingMethod) -> str:
+        prompt = f"""
+        You are specialized tarot reader. Your task is provide an insighful reading based on the drawn cards.
+
+        Reading Guidelines:
+            - Keep answers brief, focused and concise.
+            - Only interpret reversed card when specified.
+            - If a context is present, focous the reading on the context.
+            - If the context is not present, give a daily life reading.
+            - Do not mention the method name in the reading.
+
+        Use the Rider Waiter Tarot symbolism and card imagery
+
+        {self.complet_prompt(cards, context, method)}
+
+        Before answers think step by step and make sure the the answer is complete for all the cards and giving a complete insight.
+
+        """
+        messages = [
+            {
+                "role": "user",
+                "content": prompt
+            }
         ]
 
-    def generate_interpretation(
-        self, cards: List[Card], context: Optional[str], method: CardReadingMethod
-    ) -> str:
-        prompt = self.generate_prompt(cards, context or "General reading", method)
-        result = self.pipeline(
-            prompt,
-            max_new_tokens=512,
-            num_return_sequences=1,
-            do_sample=False,
+        result =  self.client.chat.completions.create(
+            model="google/gemma-2-2b-it",
+            messages=messages,
+            max_tokens=1024,
+            stream=False
         )
-        return result[0]["generated_text"][-1]["content"]
+
+        return result["choices"][0]["message"]["content"]
