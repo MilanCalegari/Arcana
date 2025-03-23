@@ -99,3 +99,17 @@ Access the deployed version of Arcana on Hugging Face Spaces: [Arcana on Hugging
 This project is licensed under the MIT License.
 
 **Note:** Ensure you replace `"YOUR_TOKEN_HERE"` with your actual Hugging Face token.
+
+---
+title: Arcana
+emoji: 🔮
+colorFrom: gray
+colorTo: purple
+sdk: streamlit
+sdk_version: 1.41.1
+app_file: app.py
+pinned: false
+license: mit
+short_description: Your AI fortune teller 🔮
+---
+
