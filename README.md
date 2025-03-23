@@ -1,11 +1,10 @@
-
 ---
-title: {{title}}
-emoji: {{emoji}}
-colorFrom: {{colorFrom}}
-colorTo: {{colorTo}}
-sdk: {{sdk}}
-sdk_version: "{{sdkVersion}}"
+title: Arcana
+emoji: 🔮
+colorFrom: indigo
+colorTo: purple
+sdk: streamlit
+sdk_version: "1.41.1"
 app_file: app.py
 pinned: false
 ---
