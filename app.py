@@ -42,12 +42,6 @@ with st.sidebar:
             step=0.1,
             help="Probability of a card appearing reversed (0.0 to 1.0)",
         )
-        # TODO: Add Portuguese language support and translation
-        # language = st.selectbox(
-        #     "Language",
-        #     ["English", "Portuguese"],
-        #     index=0
-        # )
 
 # User interface texts
 welcome_text = "### Welcome to your Tarot Reading"
